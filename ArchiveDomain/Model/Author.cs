@@ -3,9 +3,8 @@ using System.Collections.Generic;
 
 namespace ArchiveDomain.Model;
 
-public partial class Author
+public partial class Author : Entity
 {
-    public int Id { get; set; }
 
     public string FirstName { get; set; } = null!;
 

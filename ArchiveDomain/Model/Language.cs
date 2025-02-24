@@ -3,9 +3,8 @@ using System.Collections.Generic;
 
 namespace ArchiveDomain.Model;
 
-public partial class Language
+public partial class Language : Entity
 {
-    public int Id { get; set; }
 
     public string Language1 { get; set; } = null!;
 

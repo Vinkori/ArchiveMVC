@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using ArchiveDomain.Model;
 using Microsoft.EntityFrameworkCore;
 
-namespace ArchiveDomain.Model;
+namespace ArchiveInfrastructure;
 
 public partial class DbarchiveContext : DbContext
 {

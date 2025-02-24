@@ -3,9 +3,8 @@ using System.Collections.Generic;
 
 namespace ArchiveDomain.Model;
 
-public partial class Poetry
+public partial class Poetry : Entity
 {
-    public int Id { get; set; }
 
     public int AuthorId { get; set; }
 

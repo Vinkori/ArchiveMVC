@@ -3,9 +3,8 @@ using System.Collections.Generic;
 
 namespace ArchiveDomain.Model;
 
-public partial class Reader
+public partial class Reader : Entity
 {
-    public int Id { get; set; }
 
     public string Email { get; set; } = null!;
 

@@ -4,12 +4,12 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<div class="page-content">
+<h1>Поезії</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
-
 
 <table class="table">
     <thead>
@@ -45,10 +45,10 @@
                 @Html.DisplayFor(modelItem => item.PublicationDate)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Admin.Email)
+                @($"{item.Admin.FirstName} {item.Admin.LastName}")
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Author.FirstName)
+                @($"{item.Author.FirstName} {item.Author.LastName}")
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Language.Language1)
@@ -60,11 +60,12 @@
                 }
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Редагувати</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Деталі</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
             </td>
         </tr>
 }
     </tbody>
 </table>
+</div>

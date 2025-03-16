@@ -18,7 +18,8 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    background: linear-gradient(to bottom, rgba(255, 248, 220, 0) 70%, #fff8dc 100%), url('/images/bg_archive.jpg') no-repeat center center fixed;
+    background-size: cover;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
@@ -28,4 +29,53 @@ body {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+
+.page-title {
+    text-align: center;
+    background-color: rgba(255, 248, 220, 0.5); /* Напівпрозорий ivory */
+    padding: 15px 30px;
+    border-radius: 50px;
+    display: inline-block;
+    margin: 20px auto;
+}
+
+
+/* Верхня панель */
+.navbar {
+    background-color: ivory !important; /* Колір слонової кістки */
+    border-bottom: 2px solid #ddd; /* Легка нижня лінія */
+}
+
+/* Посилання між сторінками контролерів */
+.actions a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    margin: 0 5px;
+}
+
+.navbar-nav .nav-item:not(:last-child)::after {
+    content: "|";
+    color: #999;
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Загальний фон для контенту на всіх сторінках */
+.page-content {
+    background-color: rgba(255, 248, 220, 0.8); /* Напівпрозорий ivory */
+    padding: 20px;
+    border-radius: 15px;
+    max-width: 1800px;
+    margin: 80px auto;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Верхня строка таблиці */
+.table thead tr {
+    background-color: ivory; /* Колір слонової кістки */
+    font-weight: bold;
 }

@@ -166,6 +166,21 @@ namespace ArchiveInfrastructure.Controllers
                 return NotFound();
             }
 
+            ModelState.Remove("Author");
+            ModelState.Remove("Language");
+            ModelState.Remove("Admin");
+            ModelState.Remove("Form");
+
+            if (!ModelState.IsValid)
+            {
+                var allErrors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                foreach (var err in allErrors)
+                {
+                    Console.WriteLine(err);
+                }
+                // ... повернути форму або робити щось іще
+            }
+
             if (ModelState.IsValid)
             {
                 // Завантажуємо існуючу поезію з жанрами
@@ -240,16 +255,15 @@ namespace ArchiveInfrastructure.Controllers
             }
 
             var poetry = await _context.Poetries
-                .Include(p => p.Admin)
-                .Include(p => p.Author)
-                .Include(p => p.Language)
+                .Include(p => p.Forms) // Включаємо жанри, щоб потім видалити зв'язки
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (poetry == null)
             {
                 return NotFound();
             }
 
-            return View(poetry);
+            return View(poetry); // Відображаємо сторінку підтвердження
         }
 
         // POST: Poetries/Delete/5
@@ -257,13 +271,22 @@ namespace ArchiveInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var poetry = await _context.Poetries.FindAsync(id);
-            if (poetry != null)
+            var poetry = await _context.Poetries
+        .Include(p => p.Forms) // Завантажуємо пов'язану колекцію жанрів
+        .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (poetry == null)
             {
-                _context.Poetries.Remove(poetry);
+                return NotFound();
             }
 
-            await _context.SaveChangesAsync();
+            // Видаляємо зв'язки з жанрами, щоб уникнути проблем
+            poetry.Forms.Clear();
+            await _context.SaveChangesAsync(); // Спочатку оновлюємо стан БД
+
+            _context.Poetries.Remove(poetry);
+            await _context.SaveChangesAsync(); // Остаточно видаляємо поезію
+
             return RedirectToAction(nameof(Index));
         }
 

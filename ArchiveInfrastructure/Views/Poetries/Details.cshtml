@@ -5,7 +5,7 @@
 }
 
 <div class="page-content">
-<h1>Details</h1>
+<h1>Деталі поезії</h1>
 
 <div>
     <h4>Poetry</h4>
@@ -59,6 +59,39 @@
         </dd>
     </dl>
 </div>
+
+<h3>Жанри:</h3>
+<ul>
+        @foreach (var form in Model.Forms)
+        {
+            <li>
+                @form.FormName
+                    <form asp-action="RemoveFormFromPoetry" asp-controller="Poetries" method="post" style="display:inline;">
+                    <input type="hidden" name="poetryId" value="@Model.Id" />
+                    <input type="hidden" name="formId" value="@form.Id" />
+                    <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Ви впевнені, що хочете видалити цей жанр?');">
+                        Видалити
+                    </button>
+                </form>
+            </li>
+        }
+</ul>
+    <h4>Додати жанр</h4>
+    <form asp-action="AddFormToPoetry" asp-controller="Poetries" method="post">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <div class="form-group">
+            @foreach (var form in (SelectList)ViewData["Forms"])
+            {
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="selectedForms" value="@form.Value" id="form_@form.Value" />
+                    <label class="form-check-label" for="form_@form.Value">@form.Text</label>
+                </div>
+            }
+        </div>
+        <button type="submit" class="btn btn-success">Додати жанри</button>
+    </form>
+
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>

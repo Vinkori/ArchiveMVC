@@ -11,6 +11,20 @@
     <a asp-action="Create">Create New</a>
 </p>
 
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
 <table class="table">
     <thead>
         <tr>
@@ -58,6 +72,10 @@
                     @form.FormName;
                     <br />
                 }
+                @if (!item.Forms.Any())
+                    {
+                        <span>Немає жанрів</span>
+                    }
             </td>
             <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Редагувати</a> |

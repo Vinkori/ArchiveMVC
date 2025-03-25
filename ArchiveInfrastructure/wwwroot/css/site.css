@@ -55,14 +55,6 @@ body {
     margin: 0 5px;
 }
 
-.navbar-nav .nav-item:not(:last-child)::after {
-    content: "|";
-    color: #999;
-    position: absolute;
-    right: -10px;
-    top: 50%;
-    transform: translateY(-50%);
-}
 
 /* Загальний фон для контенту на всіх сторінках */
 .page-content {

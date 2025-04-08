@@ -16,6 +16,7 @@ public partial class DbarchiveContext : DbContext
     {
     }
 
+    public virtual DbSet<Admin> Admins { get; set; }
 
     public virtual DbSet<Author> Authors { get; set; }
 
@@ -25,20 +26,21 @@ public partial class DbarchiveContext : DbContext
 
     public virtual DbSet<Poetry> Poetries { get; set; }
 
+    public virtual DbSet<Reader> Readers { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=HOME-PC\\SQLEXPRESS; Database=DBArchive; Trusted_Connection=True; TrustServerCertificate=True; ");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {/*
+    {
         modelBuilder.Entity<Admin>(entity =>
         {
             entity.Property(e => e.Email).HasMaxLength(50);
             entity.Property(e => e.FirstName).HasMaxLength(50);
             entity.Property(e => e.LastName).HasMaxLength(50);
             entity.Property(e => e.Password).HasMaxLength(50);
-        });*/
+        });
 
         modelBuilder.Entity<Author>(entity =>
         {
@@ -89,11 +91,11 @@ public partial class DbarchiveContext : DbContext
             entity.Property(e => e.PublicationDate).HasColumnType("datetime");
             entity.Property(e => e.Text).HasMaxLength(50);
             entity.Property(e => e.Title).HasMaxLength(50);
-            /*
+
             entity.HasOne(d => d.Admin).WithMany(p => p.Poetries)
                 .HasForeignKey(d => d.AdminId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Poetry_Admins");*/
+                .HasConstraintName("FK_Poetry_Admins");
 
             entity.HasOne(d => d.Author).WithMany(p => p.Poetries)
                 .HasForeignKey(d => d.AuthorId)
@@ -104,19 +106,8 @@ public partial class DbarchiveContext : DbContext
                 .HasForeignKey(d => d.LanguageId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Poetry_Languages");
-            entity
-        .HasMany(p => p.Readers) // В Poetry.cs має бути ICollection<User> Readers
-        .WithMany(u => u.LikedPoems) // В User.cs має бути ICollection<Poetry> LikedPoems
-        .UsingEntity(j =>
-        {
-            j.ToTable("PoetryLikes");
-            j.HasKey("UserId", "PoetryId");
+        });
 
-            j.Property<int>("PoetryId").HasColumnName("PoetryID");
-            j.Property<string>("UserId").HasColumnName("UserID");
-        });
-        });
-        /*
         modelBuilder.Entity<Reader>(entity =>
         {
             entity.Property(e => e.Email).HasMaxLength(50);
@@ -144,7 +135,7 @@ public partial class DbarchiveContext : DbContext
                             .HasColumnName("ReaderID");
                         j.IndexerProperty<int>("PoetryId").HasColumnName("PoetryID");
                     });
-        });*/
+        });
 
         OnModelCreatingPartial(modelBuilder);
     }

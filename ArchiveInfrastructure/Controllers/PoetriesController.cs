@@ -7,22 +7,16 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ArchiveDomain.Model;
 using ArchiveInfrastructure;
-using Microsoft.AspNetCore.Authorization;
-using ArchiveInfrastructure.Models;
-using Microsoft.AspNetCore.Identity;
 
 namespace ArchiveInfrastructure.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class PoetriesController : Controller
     {
         private readonly DbarchiveContext _context;
-        private readonly UserManager<User> _userManager;
 
-        public PoetriesController(DbarchiveContext context, UserManager<User> userManager)
+        public PoetriesController(DbarchiveContext context)
         {
             _context = context;
-            _userManager = userManager;
         }
 
         // GET: Poetries
@@ -56,9 +50,9 @@ namespace ArchiveInfrastructure.Controllers
         }
 
         // GET: Poetries/Create
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
-            //ViewData["AdminId"] = new SelectList(_context.Admins, "Id", "Email");
+            ViewData["AdminId"] = new SelectList(_context.Admins, "Id", "Email");
             // Формуємо комбінований список авторів (FirstName + LastName)
             var authors = _context.Authors
                 .Select(a => new { a.Id, FullName = a.FirstName + " " + a.LastName })
@@ -67,14 +61,10 @@ namespace ArchiveInfrastructure.Controllers
             ViewData["LanguageId"] = new SelectList(_context.Languages, "Id", "Language1");
             // Передаємо список жанрів (Forms)
             ViewData["Forms"] = new SelectList(_context.Forms, "Id", "FormName");
-            // Отримуємо список користувачів із роллю "Reader"
-            var readers = await _userManager.GetUsersInRoleAsync("Reader");
-            var readerList = readers.Select(r => new
-            {
-                r.Id,
-                FullName = string.IsNullOrEmpty(r.Name) ? r.UserName : r.Name
-            }).ToList();
-            ViewData["Readers"] = new SelectList(readerList, "Id", "FullName");
+            var readers = _context.Readers
+                .Select(a => new { a.Id, FullName = a.FirstName + " " + a.LastName })
+                .ToList();
+            ViewData["Readers"] = new SelectList(readers, "Id", "FullName");
             return View();
         }
 
@@ -85,7 +75,7 @@ namespace ArchiveInfrastructure.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-        [Bind("AuthorId,Title,Text,LanguageId,Id")] Poetry poetry,
+        [Bind("AuthorId,Title,Text,LanguageId,AdminId,Id")] Poetry poetry,
         string? SelectedFormIds,   // Рядок з комою розділеними ID жанрів
         string? SelectedReaderIds)
         {
@@ -100,13 +90,11 @@ namespace ArchiveInfrastructure.Controllers
             ModelState.Remove("Readers");*/
             var author = await _context.Authors.FindAsync(poetry.AuthorId);
             var language = await _context.Languages.FindAsync(poetry.LanguageId);
-            //var admin = await _context.Admins.FindAsync(poetry.AdminId);
+            var admin = await _context.Admins.FindAsync(poetry.AdminId);
 
             poetry.Author = author;
             poetry.Language = language;
-
-            var currentAdmin = await _userManager.GetUserAsync(User);
-            poetry.Admin = await _context.Admins.FirstOrDefaultAsync(a => a.Email == currentAdmin.Email);
+            poetry.Admin = admin;
 
             ModelState.Clear();
             TryValidateModel(poetry);
@@ -157,11 +145,10 @@ namespace ArchiveInfrastructure.Controllers
 
                     foreach (var readerId in readerIds)
                     {
-                        // Оновлено: використовуємо _context.Readers, а не _context.Forms
-                        var reader = await _context.Readers.FindAsync(readerId);
+                        var reader = await _context.Forms.FindAsync(readerId);
                         if (reader != null)
                         {
-                            poetry.Readers.Add(reader);
+                            poetry.Forms.Add(reader);
                         }
                     }
                 }
@@ -170,16 +157,18 @@ namespace ArchiveInfrastructure.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            //ViewData["AdminId"] = new SelectList(_context.Admins, "Id", "Email", poetry.AdminId);
+            ViewData["AdminId"] = new SelectList(_context.Admins, "Id", "Email", poetry.AdminId);
             var authors = _context.Authors
                 .Select(a => new { a.Id, FullName = a.FirstName + " " + a.LastName })
                 .ToList();
             ViewData["AuthorId"] = new SelectList(authors, "Id", "FullName", poetry.AuthorId);
             ViewData["LanguageId"] = new SelectList(_context.Languages, "Id", "Language1", poetry.LanguageId);
             ViewData["Forms"] = new SelectList(_context.Forms, "Id", "FormName");
-            var readers = await _userManager.GetUsersInRoleAsync("Reader");
-            var readerList = readers.Select(r => new { r.Id, FullName = string.IsNullOrEmpty(r.Name) ? r.UserName : r.Name }).ToList();
-            ViewData["Readers"] = new SelectList(readerList, "Id", "FullName");
+            var readers = _context.Readers
+        .Select(r => new { r.Id, FullName = r.FirstName + " " + r.LastName })
+        .ToList();
+
+            ViewData["Readers"] = new SelectList(readers, "Id", "FullName");
             return View(poetry);
         }
 
@@ -203,7 +192,7 @@ namespace ArchiveInfrastructure.Controllers
             {
                 return NotFound();
             }
-            //ViewData["AdminId"] = new SelectList(_context.Admins, "Id", "Email", poetry.AdminId);
+            ViewData["AdminId"] = new SelectList(_context.Admins, "Id", "Email", poetry.AdminId);
             var authors = _context.Authors
                 .Select(a => new { a.Id, FullName = a.FirstName + " " + a.LastName })
                 .ToList();
@@ -211,9 +200,10 @@ namespace ArchiveInfrastructure.Controllers
             ViewData["LanguageId"] = new SelectList(_context.Languages, "Id", "Language1", poetry.LanguageId);
             // Передаємо список жанрів (Forms) для вибору
             ViewData["Forms"] = new SelectList(_context.Forms, "Id", "FormName");
-            var readers = await _userManager.GetUsersInRoleAsync("Reader");
-            var readerList = readers.Select(r => new { r.Id, FullName = string.IsNullOrEmpty(r.Name) ? r.UserName : r.Name }).ToList();
-            ViewData["Readers"] = new SelectList(readerList, "Id", "FullName");
+            var readers = _context.Readers
+                .Select(a => new { a.Id, FullName = a.FirstName + " " + a.LastName })
+                .ToList();
+            ViewData["Readers"] = new SelectList(readers, "Id", "FullName");
             return View(poetry);
         }
 
@@ -223,7 +213,7 @@ namespace ArchiveInfrastructure.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id,
-        [Bind("AuthorId,Title,Text,LanguageId,Id")] Poetry poetry,
+        [Bind("AuthorId,Title,Text,LanguageId,AdminId,Id")] Poetry poetry,
         string SelectedFormIds,   // Рядок з комою розділеними ID жанрів
         string? SelectedReaderIds)
         {
@@ -234,14 +224,11 @@ namespace ArchiveInfrastructure.Controllers
 
             var author = await _context.Authors.FindAsync(poetry.AuthorId);
             var language = await _context.Languages.FindAsync(poetry.LanguageId);
-            //var admin = await _context.Admins.FindAsync(poetry.AdminId);
+            var admin = await _context.Admins.FindAsync(poetry.AdminId);
 
             poetry.Author = author;
             poetry.Language = language;
-            //poetry.Admin = admin;
-            var currentAdmin = await _userManager.GetUserAsync(User);
-            poetry.Admin = await _context.Admins.FirstOrDefaultAsync(a => a.Email == currentAdmin.Email);
-
+            poetry.Admin = admin;
 
             ModelState.Clear();
             TryValidateModel(poetry);
@@ -280,7 +267,7 @@ namespace ArchiveInfrastructure.Controllers
                 poetryToUpdate.Title = poetry.Title;
                 poetryToUpdate.Text = poetry.Text;
                 poetryToUpdate.LanguageId = poetry.LanguageId;
-                //poetryToUpdate.AdminId = poetry.AdminId;
+                poetryToUpdate.AdminId = poetry.AdminId;
 
                 // Оновлюємо зв'язок з жанрами: очищуємо та додаємо вибрані
                 poetryToUpdate.Forms.Clear();
@@ -343,9 +330,10 @@ namespace ArchiveInfrastructure.Controllers
             ViewData["AuthorId"] = new SelectList(authors, "Id", "FullName", poetry.AuthorId);
             ViewData["LanguageId"] = new SelectList(_context.Languages, "Id", "Language1", poetry.LanguageId);
             ViewData["Forms"] = new SelectList(_context.Forms, "Id", "FormName");
-            var readers = await _userManager.GetUsersInRoleAsync("Reader");
-            var readerList = readers.Select(r => new { r.Id, FullName = string.IsNullOrEmpty(r.Name) ? r.UserName : r.Name }).ToList();
-            ViewData["Readers"] = new SelectList(readerList, "Id", "FullName");
+            var readers = _context.Readers
+                .Select(a => new { a.Id, FullName = a.FirstName + " " + a.LastName })
+                .ToList();
+            ViewData["Readers"] = new SelectList(readers, "Id", "FullName");
             return View(poetry);
         }
 

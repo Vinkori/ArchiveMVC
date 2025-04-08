@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Generic; 
 
 namespace ArchiveDomain.Model;
 
@@ -25,6 +25,5 @@ public partial class Poetry : Entity
     public virtual Language Language { get; set; } = null!;
 
     public virtual ICollection<Form> Forms { get; set; } = new List<Form>();
-
-    public virtual ICollection<Reader> Readers { get; set; } = new List<Reader>();
+    public ICollection<IAppUser> Readers { get; set; } = new List<IAppUser>();
 }

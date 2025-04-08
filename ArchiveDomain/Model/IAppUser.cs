@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
-
 
 namespace ArchiveDomain.Model
 {
-    public class User 
+    public interface IAppUser
     {
-        public int Year { get; set; }
+        string Id { get; }
+        string UserName { get; }
     }
 }
-

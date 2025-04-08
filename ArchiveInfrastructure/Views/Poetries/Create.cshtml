@@ -53,6 +53,25 @@
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
+            <div class="form-group">
+                <label>Обрати читачів які вподобали</label>
+                <select id="readerSelect" class="form-control">
+                    <option value="">-- Виберіть читача--</option>
+                    @foreach (var reader in (SelectList)ViewData["Readers"])
+                    {
+                        <option value="@reader.Value">@reader.Text</option>
+                    }
+                </select>
+                <button type="button" id="addReader" class="btn btn-secondary mt-2">Додати читача</button>
+            </div>
+            <div class="form-group">
+                <label>Вибрані читачі:</label>
+                <ul id="selectedReaders" class="list-group"></ul>
+            </div>
+            <input type="hidden" name="SelectedReaderIds" id="SelectedReaderIds" />
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
         </form>
     </div>
 </div>
@@ -63,23 +82,22 @@
 
 @section Scripts {
     <script>
+        
+        // ==== ЖАНРИ ====
         let selectedGenres = [];
 
-        // Додаємо жанр при кліку
         document.getElementById("addGenre").addEventListener("click", function () {
             const select = document.getElementById("genreSelect");
             const selectedOption = select.options[select.selectedIndex];
             const selectedId = selectedOption.value;
             const selectedText = selectedOption.text;
 
-            // Перевіряємо, чи не порожній та чи ще не доданий
             if (selectedId && !selectedGenres.includes(selectedId)) {
                 selectedGenres.push(selectedId);
                 updateSelectedGenres();
             }
         });
 
-        // Функція оновлення списку вибраних жанрів
         function updateSelectedGenres() {
             const ul = document.getElementById("selectedGenres");
             ul.innerHTML = "";
@@ -88,7 +106,6 @@
                 li.className = "list-group-item d-flex justify-content-between align-items-center";
                 li.textContent = document.querySelector(`#genreSelect option[value='${id}']`).text;
 
-                // Кнопка видалення жанру
                 const removeBtn = document.createElement("button");
                 removeBtn.textContent = "Видалити";
                 removeBtn.className = "btn btn-danger btn-sm";
@@ -101,8 +118,45 @@
                 ul.appendChild(li);
             });
 
-            // Оновлюємо приховане поле з комою розділеними ID
             document.getElementById("SelectedFormIds").value = selectedGenres.join(",");
+        }
+
+        // ==== ЧИТАЧІ ====
+        let selectedReaders = [];
+
+        document.getElementById("addReader").addEventListener("click", function () {
+            const select = document.getElementById("readerSelect");
+            const selectedOption = select.options[select.selectedIndex];
+            const selectedId = selectedOption.value;
+            const selectedText = selectedOption.text;
+
+            if (selectedId && !selectedReaders.includes(selectedId)) {
+                selectedReaders.push(selectedId);
+                updateSelectedReaders();
+            }
+        });
+
+        function updateSelectedReaders() {
+            const ul = document.getElementById("selectedReaders");
+            ul.innerHTML = "";
+            selectedReaders.forEach(function (id) {
+                const li = document.createElement("li");
+                li.className = "list-group-item d-flex justify-content-between align-items-center";
+                li.textContent = document.querySelector(`#readerSelect option[value='${id}']`).text;
+
+                const removeBtn = document.createElement("button");
+                removeBtn.textContent = "Видалити";
+                removeBtn.className = "btn btn-danger btn-sm";
+                removeBtn.onclick = function () {
+                    selectedReaders = selectedReaders.filter(r => r !== id);
+                    updateSelectedReaders();
+                };
+
+                li.appendChild(removeBtn);
+                ul.appendChild(li);
+            });
+
+            document.getElementById("SelectedReaderIds").value = selectedReaders.join(",");
         }
     </script>
 }

@@ -4,13 +4,14 @@
     ViewData["Title"] = "Index";
 }
 
+<div class="page-content">
 <h1>Index</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
 <table class="table">
-    <thead>
+        <thead class="table-dark">
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.Language1)
@@ -32,4 +33,5 @@
         </tr>
 }
     </tbody>
-</table>
+    </table>
+</div>

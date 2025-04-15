@@ -1,66 +1,72 @@
 ﻿@model ArchiveDomain.Model.Poetry
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Деталі поезії";
 }
 
 <div class="page-content">
-<h1>Details</h1>
+    <h1 class="mb-4">Деталі поезії</h1>
 
-<div>
-    <h4>Poetry</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Text)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Text)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PublicationDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PublicationDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Admin)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Admin.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Author)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Author.FirstName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Language)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Language.Language1)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Forms)
-        </dt>
-        <dd class="col-sm-10">
-            @foreach (var form in Model.Forms)
-            {
-                @form.FormName;
-                <br />
-            }
-        </dd>
-    </dl>
+    <div class="card">
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Title)</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.Title)</dd>
+                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Text)</dt>
+                <dd class="col-sm-9 poetry-text">@Html.DisplayFor(model => model.Text)</dd>
+                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.PublicationDate)</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.PublicationDate)</dd>
+                <dt class="col-sm-3">Додано користувачем</dt>
+                <dd class="col-sm-9">@(Model.AddedByUser?.Name ?? Model.AddedByUser?.UserName ?? "Невідомий")</dd>
+                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Author)</dt>
+                <dd class="col-sm-9">@(Model.Author.FirstName + " " + Model.Author.LastName)</dd>
+                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Language)</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.Language.Language1)</dd>
+                <dt class="col-sm-3">Жанри</dt>
+                <dd class="col-sm-9">
+                    @if (Model.Forms.Any())
+                    {
+                        @string.Join(", ", Model.Forms.Select(f => f.FormName))
+                    }
+                    else
+                    {
+                        <span>Немає жанрів</span>
+                    }
+                </dd>
+                <dt class="col-sm-3">Лайки</dt>
+                <dd class="col-sm-9">@Model.LikedByUsers.Count</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        @if (User.Identity.IsAuthenticated)
+        {
+            <form asp-action="Like" method="post" class="d-inline">
+                <input type="hidden" name="id" value="@Model.Id" />
+                @if (Model.LikedByUsers.Any(u => u.UserName == User.Identity.Name))
+                {
+                    <button type="submit" class="btn btn-link p-0" title="Видалити з обраного">
+                        <i class="bi bi-heart-fill text-danger fs-4"></i>
+                    </button>
+                }
+                else
+                {
+                    <button type="submit" class="btn btn-link p-0" title="Додати до обраного">
+                        <i class="bi bi-heart text-secondary fs-4"></i>
+                    </button>
+                }
+            </form>
+        }
+        <a asp-action="Index" class="btn btn-secondary ms-2">Назад до списку</a>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning ms-2">Редагувати</a>
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger ms-2">Видалити</a>
+        }
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
-</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+}

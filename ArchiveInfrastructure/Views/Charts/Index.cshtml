@@ -1,0 +1,83 @@
+﻿@{
+    ViewData["Title"] = "Діаграми поезій";
+}
+
+<div class="page-content">
+    <h1 class="mb-4">Діаграми поезій</h1>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <h3 class="text-center">Топ-5 поезій за лайками</h3>
+            <div id="top-poems-chart" style="width: 100%; height: 400px;"></div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <h3 class="text-center">Розподіл поезій за мовою</h3>
+            <div id="language-chart" style="width: 100%; height: 400px;"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', { packages: ['corechart', 'bar'] });
+        google.charts.setOnLoadCallback(drawCharts);
+
+        function drawCharts() {
+            // Стовпчикова діаграма: Топ-5 поезій за лайками
+            fetch('/Charts/GetTopPoemsByLikes')
+                .then(response => response.json())
+                .then(data => {
+                    var dataTable = new google.visualization.DataTable();
+                    dataTable.addColumn('string', 'Назва поезії');
+                    dataTable.addColumn('number', 'Лайки');
+
+                    data.forEach(item => {
+                        dataTable.addRow([item.title, item.likes]);
+                    });
+
+                    var options = {
+                        title: '',
+                        chartArea: { width: '60%' },
+                        hAxis: {
+                            title: 'Кількість лайків',
+                            minValue: 0
+                        },
+                        vAxis: {
+                            title: 'Поезія'
+                        },
+                        legend: { position: 'none' },
+                        colors: ['#8B008B'] // Фіолетовий колір для стовпців
+                    };
+
+                    var chart = new google.visualization.BarChart(document.getElementById('top-poems-chart'));
+                    chart.draw(dataTable, options);
+                })
+                .catch(error => console.error('Error loading top poems chart:', error));
+
+            // Кругова діаграма: Розподіл за мовою
+            fetch('/Charts/GetLanguageDistribution')
+                .then(response => response.json())
+                .then(data => {
+                    var dataTable = new google.visualization.DataTable();
+                    dataTable.addColumn('string', 'Мова');
+                    dataTable.addColumn('number', 'Відсоток');
+
+                    data.forEach(item => {
+                        dataTable.addRow([item.language || 'Невідома', item.percentage]);
+                    });
+
+                    var options = {
+                        title: '',
+                        pieHole: 0.4,
+                        chartArea: { width: '80%', height: '80%' },
+                        colors: ['#8B008B', '#4B0082', '#6A5ACD', '#9932CC', '#BA55D3'] // Палітра фіолетових відтінків
+                    };
+
+                    var chart = new google.visualization.PieChart(document.getElementById('language-chart'));
+                    chart.draw(dataTable, options);
+                })
+                .catch(error => console.error('Error loading language chart:', error));
+        }
+    </script>
+}

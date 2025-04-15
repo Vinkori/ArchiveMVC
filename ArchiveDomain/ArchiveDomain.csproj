@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Compile Remove="Class1.cs" />
-    <Compile Remove="Model\User.cs" />
   </ItemGroup>
 
   <ItemGroup>

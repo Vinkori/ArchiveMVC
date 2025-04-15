@@ -2,8 +2,10 @@
     ViewData["Title"] = "Лабораторна робота ІСтаТП 2025. Архів поезій";
 }
 
+<div class="page-content">
 @if (User.Identity.IsAuthenticated)
 {
+
     <p>@User.Identity.Name</p>
 
     <form method="post" asp-controller="Account" asp-action="Logout">
@@ -12,6 +14,8 @@
 }
 else
 {
-    <a asp-controller="Account" asp-action="Login">Вхід</a>
-    <a asp-controller="Account" asp-action="Register">Реєстація</a>
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Вхід</a>
+        <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Реєстація</a>
 }
+
+</div>

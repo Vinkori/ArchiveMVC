@@ -11,9 +11,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ArchiveInfrastructure.Migrations
 {
-    [DbContext(typeof(IdentityContext))]
-    [Migration("20250407173837_AddNameToUser")]
-    partial class AddNameToUser
+    [DbContext(typeof(DbarchiveContext))]
+    [Migration("20250414163621_UpdatePoetryWithIdentity")]
+    partial class UpdatePoetryWithIdentity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,112 @@ namespace ArchiveInfrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("ArchiveInfrastructure.Models.User", b =>
+            modelBuilder.Entity("ArchiveDomain.Model.Author", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Authors");
+                });
+
+            modelBuilder.Entity("ArchiveDomain.Model.Form", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FormName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Forms");
+                });
+
+            modelBuilder.Entity("ArchiveDomain.Model.Language", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Language1")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("Language");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Languages");
+                });
+
+            modelBuilder.Entity("ArchiveDomain.Model.Poetry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AddedByUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("AddedByUserId");
+
+                    b.Property<int>("AuthorId")
+                        .HasColumnType("int")
+                        .HasColumnName("AuthorID");
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("int")
+                        .HasColumnName("LanguageID");
+
+                    b.Property<DateTime>("PublicationDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddedByUserId");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("LanguageId");
+
+                    b.ToTable("Poetry", (string)null);
+                });
+
+            modelBuilder.Entity("ArchiveDomain.Model.User", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -94,6 +199,23 @@ namespace ArchiveInfrastructure.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("FormsPoetry", b =>
+                {
+                    b.Property<int>("FormId")
+                        .HasColumnType("int")
+                        .HasColumnName("FormID");
+
+                    b.Property<int>("PoetryId")
+                        .HasColumnType("int")
+                        .HasColumnName("PoetryID");
+
+                    b.HasKey("FormId", "PoetryId");
+
+                    b.HasIndex("PoetryId");
+
+                    b.ToTable("FormsPoetry", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -229,6 +351,70 @@ namespace ArchiveInfrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("PoetryLikes", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("UserId");
+
+                    b.Property<int>("PoetryId")
+                        .HasColumnType("int")
+                        .HasColumnName("PoetryId");
+
+                    b.HasKey("UserId", "PoetryId");
+
+                    b.HasIndex("PoetryId");
+
+                    b.ToTable("PoetryLikes", (string)null);
+                });
+
+            modelBuilder.Entity("ArchiveDomain.Model.Poetry", b =>
+                {
+                    b.HasOne("ArchiveDomain.Model.User", "AddedByUser")
+                        .WithMany("AddedPoems")
+                        .HasForeignKey("AddedByUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("FK_Poetry_Users");
+
+                    b.HasOne("ArchiveDomain.Model.Author", "Author")
+                        .WithMany("Poetries")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("FK_Poetry_Authors");
+
+                    b.HasOne("ArchiveDomain.Model.Language", "Language")
+                        .WithMany("Poetries")
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("FK_Poetry_Languages");
+
+                    b.Navigation("AddedByUser");
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Language");
+                });
+
+            modelBuilder.Entity("FormsPoetry", b =>
+                {
+                    b.HasOne("ArchiveDomain.Model.Form", null)
+                        .WithMany()
+                        .HasForeignKey("FormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_FormsPoetry_Forms");
+
+                    b.HasOne("ArchiveDomain.Model.Poetry", null)
+                        .WithMany()
+                        .HasForeignKey("PoetryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_FormsPoetry_Poetry");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -240,7 +426,7 @@ namespace ArchiveInfrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("ArchiveInfrastructure.Models.User", null)
+                    b.HasOne("ArchiveDomain.Model.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -249,7 +435,7 @@ namespace ArchiveInfrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("ArchiveInfrastructure.Models.User", null)
+                    b.HasOne("ArchiveDomain.Model.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -264,7 +450,7 @@ namespace ArchiveInfrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ArchiveInfrastructure.Models.User", null)
+                    b.HasOne("ArchiveDomain.Model.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -273,11 +459,43 @@ namespace ArchiveInfrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("ArchiveInfrastructure.Models.User", null)
+                    b.HasOne("ArchiveDomain.Model.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("PoetryLikes", b =>
+                {
+                    b.HasOne("ArchiveDomain.Model.Poetry", null)
+                        .WithMany()
+                        .HasForeignKey("PoetryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_PoetryLikes_Poetry");
+
+                    b.HasOne("ArchiveDomain.Model.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_PoetryLikes_Users");
+                });
+
+            modelBuilder.Entity("ArchiveDomain.Model.Author", b =>
+                {
+                    b.Navigation("Poetries");
+                });
+
+            modelBuilder.Entity("ArchiveDomain.Model.Language", b =>
+                {
+                    b.Navigation("Poetries");
+                });
+
+            modelBuilder.Entity("ArchiveDomain.Model.User", b =>
+                {
+                    b.Navigation("AddedPoems");
                 });
 #pragma warning restore 612, 618
         }

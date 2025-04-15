@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - LR01 Poetry archive</title>
+    <title>@ViewData["Title"] - Poetry archive AOP</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap_zephyr.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -22,26 +22,32 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Poetries" asp-action="Index">Poetry</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Poetries" asp-action="Index">Поезії</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Forms" asp-action="Index">Forms</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Charts" asp-action="Index">Статистика</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Languages" asp-action="Index">Languages</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Admins" asp-action="Index">Admins</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Readers" asp-action="Index">Readers</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Authors" asp-action="Index">Authors</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Roles" asp-action="Index">Roles</a>
-                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Poetries" asp-action="Liked">Вподобані поезії</a>
+                            </li>
+                        }
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Forms" asp-action="Index">Жанри</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Languages" asp-action="Index">Мови</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Authors" asp-action="Index">Автори</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Roles" asp-action="Index">Ролі</a>
+                            </li>
+                        }
                     </ul>
                     @if (User.Identity.IsAuthenticated)
                     {
@@ -74,7 +80,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - LR01 Poetry archive - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - LR01 Poetry archive
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

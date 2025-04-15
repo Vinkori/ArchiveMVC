@@ -1,0 +1,67 @@
+﻿@model IEnumerable<ArchiveDomain.Model.Poetry>
+
+@{
+    ViewData["Title"] = "Вподобані поезії";
+}
+
+<div class="page-content">
+    <h1 class="mb-4">Вподобані поезії</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success" role="alert">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <p>Ви ще не вподобали жодної поезії.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>@Html.DisplayNameFor(model => model.Title)</th>
+                    <th>@Html.DisplayNameFor(model => model.PublicationDate)</th>
+                    <th>Додано користувачем</th>
+                    <th>@Html.DisplayNameFor(model => model.Author)</th>
+                    <th>@Html.DisplayNameFor(model => model.Language)</th>
+                    <th>Жанри</th>
+                    <th>Дії</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td data-label="@Html.DisplayNameFor(model => model.Title)">@Html.DisplayFor(modelItem => item.Title)</td>
+                        <td data-label="@Html.DisplayNameFor(model => model.PublicationDate)">@Html.DisplayFor(modelItem => item.PublicationDate)</td>
+                        <td data-label="Додано користувачем">@(item.AddedByUser?.Name ?? item.AddedByUser?.UserName ?? "Невідомий")</td>
+                        <td data-label="@Html.DisplayNameFor(model => model.Author)">@(item.Author.FirstName + " " + item.Author.LastName)</td>
+                        <td data-label="@Html.DisplayNameFor(model => model.Language)">@Html.DisplayFor(modelItem => item.Language.Language1)</td>
+                        <td data-label="Жанри">
+                            @if (item.Forms.Any())
+                            {
+                                @string.Join(", ", item.Forms.Select(f => f.FormName))
+                            }
+                            else
+                            {
+                                <span>Немає жанрів</span>
+                            }
+                        </td>
+                        <td data-label="Дії">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info">Деталі</a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning">Редагувати</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Видалити</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

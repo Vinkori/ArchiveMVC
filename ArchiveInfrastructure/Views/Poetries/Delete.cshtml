@@ -1,57 +1,42 @@
 ﻿@model ArchiveDomain.Model.Poetry
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Видалити поезію";
 }
 
-<h1>Delete</h1>
-
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Poetry</h4>
+<div class="page-content">
+    <h1 class="mb-4">Видалити поезію</h1>
+    <h3>Ви впевнені, що хочете видалити цю поезію?</h3>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Text)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Text)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PublicationDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PublicationDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Admin)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Admin.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Author)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Author.FirstName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Language)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Language.Language1)
+        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Title)</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Title)</dd>
+        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Text)</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Text)</dd>
+        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.PublicationDate)</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.PublicationDate)</dd>
+        <dt class="col-sm-3">Додано користувачем</dt>
+        <dd class="col-sm-9">@(Model.AddedByUser?.Name ?? Model.AddedByUser?.UserName ?? "Невідомий")</dd>
+        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Author)</dt>
+        <dd class="col-sm-9">@(Model.Author.FirstName + " " + Model.Author.LastName)</dd>
+        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Language)</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Language.Language1)</dd>
+        <dt class="col-sm-3">Жанри</dt>
+        <dd class="col-sm-9">
+            @if (Model.Forms.Any())
+            {
+                @string.Join(", ", Model.Forms.Select(f => f.FormName))
+            }
+            else
+            {
+                <span>Немає жанрів</span>
+            }
         </dd>
     </dl>
-    
+
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <input type="submit" value="Видалити" class="btn btn-danger" />
+        <a asp-action="Index" class="btn btn-secondary ms-2">Назад до списку</a>
     </form>
 </div>

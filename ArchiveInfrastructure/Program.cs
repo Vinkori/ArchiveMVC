@@ -1,66 +1,48 @@
-using ArchiveDomain.Model;
-using ArchiveInfrastructure;
-using ArchiveInfrastructure.Models;
-using ArchiveInfrastructure.Servises;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ArchiveDomain.Model;
+using ArchiveInfrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<DbarchiveContext>(option => option.UseSqlServer(
-    builder.Configuration.GetConnectionString("DefaultConnection")
-    ));
-builder.Services.AddDbContext<IdentityContext>(option => option.UseSqlServer(
-    builder.Configuration.GetConnectionString("IdentityConnection")
-    ));
-builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<DbarchiveContext>(option => option.UseSqlServer(
-     builder.Configuration.GetConnectionString("DefaultConnection")
-     ));
-builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<IdentityContext>();
+// Додаємо DbContext
+builder.Services.AddDbContext<DbarchiveContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.Configure<IdentityOptions>(options =>
+// Додаємо Identity
+builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
-    options.Password.RequiredUniqueChars = 1;
-});
+    options.Password.RequireLowercase = false;
+})
+.AddEntityFrameworkStores<DbarchiveContext>()
+.AddDefaultTokenProviders();
 
+// Додаємо MVC
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    await DbInitializer.SeedRolesAsync(services);
-}
-
-
-// Configure the HTTP request pipeline.
+// Налаштування middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseAuthentication();
-
 app.UseAuthorization();
-
-app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
-
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

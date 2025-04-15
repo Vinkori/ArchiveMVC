@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ArchiveDomain.Model;
 using ArchiveInfrastructure;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ArchiveInfrastructure.Controllers
 {
@@ -26,6 +27,7 @@ namespace ArchiveInfrastructure.Controllers
         }
 
         // GET: Languages/Details/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -44,6 +46,7 @@ namespace ArchiveInfrastructure.Controllers
         }
 
         // GET: Languages/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -54,6 +57,7 @@ namespace ArchiveInfrastructure.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("Language1,Id")] Language language)
         {
             if (ModelState.IsValid)
@@ -66,6 +70,7 @@ namespace ArchiveInfrastructure.Controllers
         }
 
         // GET: Languages/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -86,6 +91,7 @@ namespace ArchiveInfrastructure.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("Language1,Id")] Language language)
         {
             if (id != language.Id)
@@ -117,6 +123,7 @@ namespace ArchiveInfrastructure.Controllers
         }
 
         // GET: Languages/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -137,6 +144,7 @@ namespace ArchiveInfrastructure.Controllers
         // POST: Languages/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var language = await _context.Languages.FindAsync(id);

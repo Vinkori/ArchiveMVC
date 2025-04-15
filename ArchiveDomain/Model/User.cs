@@ -1,16 +1,14 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
-
 
 namespace ArchiveDomain.Model
 {
-    public class User 
+    public class User : IdentityUser
     {
-        public int Year { get; set; }
+        public string? Name { get; set; }
+        public DateOnly? DateOfBirth { get; set; }
+        public virtual ICollection<Poetry> LikedPoems { get; set; } = new List<Poetry>();
+        public virtual ICollection<Poetry> AddedPoems { get; set; } = new List<Poetry>(); // Поезії, додані користувачем
     }
 }
-

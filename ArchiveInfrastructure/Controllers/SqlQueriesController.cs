@@ -1,20 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using ArchiveDomain.Model;
-using ArchiveInfrastructure.ViewModels;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 
 namespace ArchiveInfrastructure.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class SqlQueriesController : Controller
     {
         private readonly DbarchiveContext _context;
         private readonly string _connectionString;
         private readonly string _queriesPath;
+
+        private const string Q1_PATH = @"D:\Projects\BdLab02\ArchiveInfrastructure\Queries\Query1.sql";
+        private const string Q2_PATH = @"D:\Projects\BdLab02\ArchiveInfrastructure\Queries\Query2.sql";
+        private const string Q3_PATH = @"D:\Projects\BdLab02\ArchiveInfrastructure\Queries\Query3.sql";
+        private const string Q4_PATH = @"D:\Projects\BdLab02\ArchiveInfrastructure\Queries\Query4.sql";
+        private const string Q5_PATH = @"D:\Projects\BdLab02\ArchiveInfrastructure\Queries\Query5.sql";
+        private const string Q6_PATH = @"D:\Projects\BdLab02\ArchiveInfrastructure\Queries\Query6.sql";
+        private const string Q7_PATH = @"D:\Projects\BdLab02\ArchiveInfrastructure\Queries\Query7.sql";
+        private const string Q8_PATH = @"D:\Projects\BdLab02\ArchiveInfrastructure\Queries\Query8.sql";
+
+        private const string ERR_POEMS = "Вірші, що задовольняють умову, відсутні.";
+        private const string ERR_AUTHORS = "Автори, що задовольняють умову, відсутні.";
+        private const string ERR_GENRES = "Жанри, що задовольняють умову, відсутні.";
+        private const string ERR_USERS = "Користувачі, що задовольняють умову, відсутні.";
+        private const string ERR_PAIRS = "Пари користувачів, що задовольняють умову, відсутні.";
 
         public SqlQueriesController(DbarchiveContext context, IWebHostEnvironment env)
         {
@@ -25,159 +41,492 @@ namespace ArchiveInfrastructure.Controllers
 
         public IActionResult Index()
         {
-            return View(new SqlQueriesViewModel());
+            return View(new Query());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Index(SqlQueriesViewModel model, string queryType)
+        public IActionResult Query1(Query queryModel)
         {
+            if (string.IsNullOrEmpty(queryModel.LastName) || string.IsNullOrEmpty(queryModel.Keyword) || !queryModel.MinLikes.HasValue)
+            {
+                ViewBag.ErrorFlag = 1;
+                ViewBag.QuantityError = "Усі поля для запиту 1 є обов'язковими.";
+                return View("Index", queryModel);
+            }
+
+            string query = System.IO.File.ReadAllText(Q1_PATH);
+            queryModel.Poems = new List<Query.PoetryInfo>();
+            queryModel.QueryName = "Q1";
+            queryModel.ErrorFlag = 0;
+            queryModel.ErrorName = null;
+
             try
             {
-                switch (queryType)
+                using (var connection = new SqlConnection(_connectionString))
                 {
-                    case "Query1":
-                        if (string.IsNullOrEmpty(model.Query1_LastName) || string.IsNullOrEmpty(model.Query1_Keyword) || !model.Query1_MinLikes.HasValue)
+                    connection.Open();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@LastName", queryModel.LastName);
+                        command.Parameters.AddWithValue("@Keyword", queryModel.Keyword);
+                        command.Parameters.AddWithValue("@MinLikes", queryModel.MinLikes.Value);
+
+                        using (var reader = command.ExecuteReader())
                         {
-                            model.ErrorMessage = "Усі поля для запиту 1 є обов'язковими.";
-                            break;
+                            int count = 0;
+                            while (reader.Read())
+                            {
+                                queryModel.Poems.Add(new Query.PoetryInfo
+                                {
+                                    Id = reader.GetInt32(0),
+                                    Title = reader.GetString(1),
+                                    Text = reader.GetString(2),
+                                    PublicationDate = reader.GetDateTime(3),
+                                    AuthorName = reader.GetString(4),
+                                    LanguageName = reader.GetString(5),
+                                    AdminName = reader.GetString(6)
+                                });
+                                count++;
+                            }
+                            if (count == 0)
+                            {
+                                queryModel.ErrorFlag = 1;
+                                queryModel.ErrorName = ERR_POEMS;
+                            }
                         }
-                        string sql1 = File.ReadAllText(Path.Combine(_queriesPath, "Query1.sql"));
-                        var params1 = new[]
-                        {
-                            new SqlParameter("@LastName", model.Query1_LastName),
-                            new SqlParameter("@Keyword", model.Query1_Keyword),
-                            new SqlParameter("@MinLikes", model.Query1_MinLikes.Value)
-                        };
-                        (model.QueryResults, model.ColumnNames) = ExecuteQuery(sql1, params1);
-                        model.ExecutedQuery = "Query1";
-                        if (model.QueryResults.Count == 0) model.ErrorMessage = "Немає результатів.";
-                        break;
-
-                    case "Query2":
-                        if (string.IsNullOrEmpty(model.Query2_LanguageName))
-                        {
-                            model.ErrorMessage = "Назва мови для запиту 2 є обов'язковою.";
-                            break;
-                        }
-                        string sql2 = File.ReadAllText(Path.Combine(_queriesPath, "Query2.sql"));
-                        var params2 = new[] { new SqlParameter("@LanguageName", model.Query2_LanguageName) };
-                        (model.QueryResults, model.ColumnNames) = ExecuteQuery(sql2, params2);
-                        model.ExecutedQuery = "Query2";
-                        if (model.QueryResults.Count == 0) model.ErrorMessage = "Немає результатів.";
-                        break;
-
-                    case "Query3":
-                        if (!model.Query3_AfterDate.HasValue)
-                        {
-                            model.ErrorMessage = "Дата для запиту 3 є обов'язковою.";
-                            break;
-                        }
-                        string sql3 = File.ReadAllText(Path.Combine(_queriesPath, "Query3.sql"));
-                        var params3 = new[] { new SqlParameter("@AfterDate", model.Query3_AfterDate.Value) };
-                        (model.QueryResults, model.ColumnNames) = ExecuteQuery(sql3, params3);
-                        model.ExecutedQuery = "Query3";
-                        if (model.QueryResults.Count == 0) model.ErrorMessage = "Немає результатів.";
-                        break;
-
-                    case "Query4":
-                        if (string.IsNullOrEmpty(model.Query4_FormName))
-                        {
-                            model.ErrorMessage = "Назва жанру для запиту 4 є обов'язковою.";
-                            break;
-                        }
-                        string sql4 = File.ReadAllText(Path.Combine(_queriesPath, "Query4.sql"));
-                        var params4 = new[] { new SqlParameter("@FormName", model.Query4_FormName) };
-                        (model.QueryResults, model.ColumnNames) = ExecuteQuery(sql4, params4);
-                        model.ExecutedQuery = "Query4";
-                        if (model.QueryResults.Count == 0) model.ErrorMessage = "Немає результатів.";
-                        break;
-
-                    case "Query5":
-                        if (string.IsNullOrEmpty(model.Query5_AdminName) || string.IsNullOrEmpty(model.Query5_LanguageName))
-                        {
-                            model.ErrorMessage = "Усі поля для запиту 5 є обов'язковими.";
-                            break;
-                        }
-                        string sql5 = File.ReadAllText(Path.Combine(_queriesPath, "Query5.sql"));
-                        var params5 = new[]
-                        {
-                            new SqlParameter("@AdminName", model.Query5_AdminName),
-                            new SqlParameter("@LanguageName", model.Query5_LanguageName)
-                        };
-                        (model.QueryResults, model.ColumnNames) = ExecuteQuery(sql5, params5);
-                        model.ExecutedQuery = "Query5";
-                        if (model.QueryResults.Count == 0) model.ErrorMessage = "Немає результатів.";
-                        break;
-
-                    case "Query6":
-                        if (string.IsNullOrEmpty(model.Query6_UserId))
-                        {
-                            model.ErrorMessage = "ID користувача для запиту 6 є обов'язковим.";
-                            break;
-                        }
-                        string sql6 = File.ReadAllText(Path.Combine(_queriesPath, "Query6.sql"));
-                        var params6 = new[] { new SqlParameter("@UserId", model.Query6_UserId) };
-                        (model.QueryResults, model.ColumnNames) = ExecuteQuery(sql6, params6);
-                        model.ExecutedQuery = "Query6";
-                        if (model.QueryResults.Count == 0) model.ErrorMessage = "Немає результатів.";
-                        break;
-
-                    case "Query7":
-                        string sql7 = File.ReadAllText(Path.Combine(_queriesPath, "Query7.sql"));
-                        (model.QueryResults, model.ColumnNames) = ExecuteQuery(sql7, null);
-                        model.ExecutedQuery = "Query7";
-                        if (model.QueryResults.Count == 0) model.ErrorMessage = "Немає результатів.";
-                        break;
-
-                    case "Query8":
-                        if (!model.Query8_AuthorId.HasValue)
-                        {
-                            model.ErrorMessage = "ID автора для запиту 8 є обов'язковим.";
-                            break;
-                        }
-                        string sql8 = File.ReadAllText(Path.Combine(_queriesPath, "Query8.sql"));
-                        var params8 = new[] { new SqlParameter("@AuthorId", model.Query8_AuthorId.Value) };
-                        (model.QueryResults, model.ColumnNames) = ExecuteQuery(sql8, params8);
-                        model.ExecutedQuery = "Query8";
-                        if (model.QueryResults.Count == 0) model.ErrorMessage = "Немає результатів.";
-                        break;
-
-                    default:
-                        model.ErrorMessage = "Невідомий тип запиту.";
-                        break;
+                    }
+                    connection.Close();
                 }
             }
             catch (Exception ex)
             {
-                model.ErrorMessage = $"Помилка: {ex.Message}";
+                queryModel.ErrorFlag = 1;
+                queryModel.ErrorName = "Помилка: " + ex.Message;
             }
-            return View(model);
+
+            return View("Results", queryModel);
         }
 
-        private (List<Dictionary<string, object>>, List<string>) ExecuteQuery(string sql, SqlParameter[] parameters)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Query2(Query queryModel)
         {
-            var results = new List<Dictionary<string, object>>();
-            var columnNames = new List<string>();
-            using (var connection = new SqlConnection(_connectionString))
+            if (string.IsNullOrEmpty(queryModel.LanguageName))
             {
-                connection.Open();
-                using (var command = new SqlCommand(sql, connection))
+                ViewBag.ErrorFlag = 1;
+                ViewBag.QuantityError = "Назва мови для запиту 2 є обов'язковою.";
+                return View("Index", queryModel);
+            }
+
+            string query = System.IO.File.ReadAllText(Q2_PATH);
+            queryModel.Authors = new List<Query.AuthorInfo>();
+            queryModel.QueryName = "Q2";
+            queryModel.ErrorFlag = 0;
+            queryModel.ErrorName = null;
+
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
                 {
-                    if (parameters != null) command.Parameters.AddRange(parameters);
-                    using (var reader = command.ExecuteReader())
+                    connection.Open();
+                    using (var command = new SqlCommand(query, connection))
                     {
-                        for (int i = 0; i < reader.FieldCount; i++) columnNames.Add(reader.GetName(i));
-                        while (reader.Read())
+                        command.Parameters.AddWithValue("@LanguageName", queryModel.LanguageName);
+
+                        using (var reader = command.ExecuteReader())
                         {
-                            var row = new Dictionary<string, object>();
-                            for (int i = 0; i < reader.FieldCount; i++) row[reader.GetName(i)] = reader.GetValue(i);
-                            results.Add(row);
+                            int count = 0;
+                            while (reader.Read())
+                            {
+                                queryModel.Authors.Add(new Query.AuthorInfo
+                                {
+                                    Id = reader.GetInt32(0),
+                                    FullName = $"{reader.GetString(1)} {reader.GetString(2)}"
+                                });
+                                count++;
+                            }
+                            if (count == 0)
+                            {
+                                queryModel.ErrorFlag = 1;
+                                queryModel.ErrorName = ERR_AUTHORS;
+                            }
                         }
                     }
+                    connection.Close();
                 }
             }
-            return (results, columnNames);
+            catch (Exception ex)
+            {
+                queryModel.ErrorFlag = 1;
+                queryModel.ErrorName = "Помилка: " + ex.Message;
+            }
+
+            return View("Results", queryModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Query3(Query queryModel)
+        {
+            if (!queryModel.AfterDate.HasValue)
+            {
+                ViewBag.ErrorFlag = 1;
+                ViewBag.QuantityError = "Дата для запиту 3 є обов'язковою.";
+                return View("Index", queryModel);
+            }
+
+            string query = System.IO.File.ReadAllText(Q3_PATH);
+            queryModel.Genres = new List<string>();
+            queryModel.QueryName = "Q3";
+            queryModel.ErrorFlag = 0;
+            queryModel.ErrorName = null;
+
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@AfterDate", queryModel.AfterDate.Value);
+
+                        using (var reader = command.ExecuteReader())
+                        {
+                            int count = 0;
+                            while (reader.Read())
+                            {
+                                queryModel.Genres.Add(reader.GetString(0));
+                                count++;
+                            }
+                            if (count == 0)
+                            {
+                                queryModel.ErrorFlag = 1;
+                                queryModel.ErrorName = ERR_GENRES;
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                queryModel.ErrorFlag = 1;
+                queryModel.ErrorName = "Помилка: " + ex.Message;
+            }
+
+            return View("Results", queryModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Query4(Query queryModel)
+        {
+            if (string.IsNullOrEmpty(queryModel.FormName))
+            {
+                ViewBag.ErrorFlag = 1;
+                ViewBag.QuantityError = "Назва жанру для запиту 4 є обов'язковою.";
+                return View("Index", queryModel);
+            }
+
+            string query = System.IO.File.ReadAllText(Q4_PATH);
+            queryModel.Users = new List<Query.UserInfo>();
+            queryModel.QueryName = "Q4";
+            queryModel.ErrorFlag = 0;
+            queryModel.ErrorName = null;
+
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@FormName", queryModel.FormName);
+
+                        using (var reader = command.ExecuteReader())
+                        {
+                            int count = 0;
+                            while (reader.Read())
+                            {
+                                queryModel.Users.Add(new Query.UserInfo
+                                {
+                                    Id = reader.GetString(0),
+                                    UserName = reader.GetString(1)
+                                });
+                                count++;
+                            }
+                            if (count == 0)
+                            {
+                                queryModel.ErrorFlag = 1;
+                                queryModel.ErrorName = ERR_USERS;
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                queryModel.ErrorFlag = 1;
+                queryModel.ErrorName = "Помилка: " + ex.Message;
+            }
+
+            return View("Results", queryModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Query5(Query queryModel)
+        {
+            if (string.IsNullOrEmpty(queryModel.AdminName) || string.IsNullOrEmpty(queryModel.LanguageName))
+            {
+                ViewBag.ErrorFlag = 1;
+                ViewBag.QuantityError = "Усі поля для запиту 5 є обов'язковими.";
+                return View("Index", queryModel);
+            }
+
+            // Validate admin exists
+            if (!_context.Users.Any(u => u.UserName == queryModel.AdminName))
+            {
+                ViewBag.ErrorFlag = 1;
+                ViewBag.QuantityError = "Адміністратор із вказаним логіном не існує.";
+                return View("Index", queryModel);
+            }
+
+            string query = System.IO.File.ReadAllText(Q5_PATH);
+            queryModel.Poems = new List<Query.PoetryInfo>();
+            queryModel.QueryName = "Q5";
+            queryModel.ErrorFlag = 0;
+            queryModel.ErrorName = null;
+
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@AdminName", queryModel.AdminName);
+                        command.Parameters.AddWithValue("@LanguageName", queryModel.LanguageName);
+
+                        using (var reader = command.ExecuteReader())
+                        {
+                            int count = 0;
+                            while (reader.Read())
+                            {
+                                queryModel.Poems.Add(new Query.PoetryInfo
+                                {
+                                    Id = reader.GetInt32(0),
+                                    Title = reader.GetString(1),
+                                    Text = reader.GetString(2),
+                                    PublicationDate = reader.GetDateTime(3),
+                                    AuthorName = reader.GetString(4),
+                                    LanguageName = reader.GetString(5),
+                                    AdminName = reader.GetString(6)
+                                });
+                                count++;
+                            }
+                            if (count == 0)
+                            {
+                                queryModel.ErrorFlag = 1;
+                                queryModel.ErrorName = ERR_POEMS;
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                queryModel.ErrorFlag = 1;
+                queryModel.ErrorName = "Помилка: " + ex.Message;
+            }
+
+            return View("Results", queryModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Query6(Query queryModel)
+        {
+            if (string.IsNullOrEmpty(queryModel.UserId))
+            {
+                ViewBag.ErrorFlag = 1;
+                ViewBag.QuantityError = "ID користувача для запиту 6 є обов'язковим.";
+                return View("Index", queryModel);
+            }
+
+            // Validate user exists
+            if (!_context.Users.Any(u => u.Id == queryModel.UserId))
+            {
+                ViewBag.ErrorFlag = 1;
+                ViewBag.QuantityError = "Користувач із вказаним ID не існує.";
+                return View("Index", queryModel);
+            }
+
+            string query = System.IO.File.ReadAllText(Q6_PATH);
+            queryModel.Users = new List<Query.UserInfo>();
+            queryModel.QueryName = "Q6";
+            queryModel.ErrorFlag = 0;
+            queryModel.ErrorName = null;
+
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@UserId", queryModel.UserId);
+
+                        using (var reader = command.ExecuteReader())
+                        {
+                            int count = 0;
+                            while (reader.Read())
+                            {
+                                queryModel.Users.Add(new Query.UserInfo
+                                {
+                                    Id = reader.GetString(0),
+                                    UserName = reader.GetString(1)
+                                });
+                                count++;
+                            }
+                            if (count == 0)
+                            {
+                                queryModel.ErrorFlag = 1;
+                                queryModel.ErrorName = ERR_USERS;
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                queryModel.ErrorFlag = 1;
+                queryModel.ErrorName = "Помилка: " + ex.Message;
+            }
+
+            return View("Results", queryModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Query7(Query queryModel)
+        {
+            string query = System.IO.File.ReadAllText(Q7_PATH);
+            queryModel.UserPairs = new List<Query.UserPair>();
+            queryModel.QueryName = "Q7";
+            queryModel.ErrorFlag = 0;
+            queryModel.ErrorName = null;
+
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            int count = 0;
+                            while (reader.Read())
+                            {
+                                queryModel.UserPairs.Add(new Query.UserPair
+                                {
+                                    UserA = reader.GetString(0),
+                                    UserB = reader.GetString(1)
+                                });
+                                count++;
+                            }
+                            if (count == 0)
+                            {
+                                queryModel.ErrorFlag = 1;
+                                queryModel.ErrorName = ERR_PAIRS;
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                queryModel.ErrorFlag = 1;
+                queryModel.ErrorName = "Помилка: " + ex.Message;
+            }
+
+            return View("Results", queryModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Query8(Query queryModel)
+        {
+            if (!queryModel.AuthorId.HasValue)
+            {
+                ViewBag.ErrorFlag = 1;
+                ViewBag.QuantityError = "ID автора для запиту 8 є обов'язковим.";
+                return View("Index", queryModel);
+            }
+
+            // Validate author exists
+            if (!_context.Authors.Any(a => a.Id == queryModel.AuthorId))
+            {
+                ViewBag.ErrorFlag = 1;
+                ViewBag.QuantityError = "Автор із вказаним ID не існує.";
+                return View("Index", queryModel);
+            }
+
+            string query = System.IO.File.ReadAllText(Q8_PATH);
+            queryModel.Users = new List<Query.UserInfo>();
+            queryModel.QueryName = "Q8";
+            queryModel.ErrorFlag = 0;
+            queryModel.ErrorName = null;
+
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@AuthorId", queryModel.AuthorId.Value);
+
+                        using (var reader = command.ExecuteReader())
+                        {
+                            int count = 0;
+                            while (reader.Read())
+                            {
+                                queryModel.Users.Add(new Query.UserInfo
+                                {
+                                    Id = reader.GetString(0),
+                                    UserName = reader.GetString(1)
+                                });
+                                count++;
+                            }
+                            if (count == 0)
+                            {
+                                queryModel.ErrorFlag = 1;
+                                queryModel.ErrorName = ERR_USERS;
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                queryModel.ErrorFlag = 1;
+                queryModel.ErrorName = "Помилка: " + ex.Message;
+            }
+
+            return View("Results", queryModel);
+        }
+
+        public IActionResult Results(Query queryResult)
+        {
+            return View(queryResult);
         }
     }
 }

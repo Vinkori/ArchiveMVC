@@ -61,6 +61,12 @@ namespace ArchiveInfrastructure.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("FirstName,LastName,Id")] Author author)
         {
+            var existingForm = await _context.Authors
+                .FirstOrDefaultAsync(p => p.LastName == author.LastName && p.FirstName == author.FirstName);
+            if (existingForm != null)
+            {
+                ModelState.AddModelError(string.Empty, "Автор з такою назвою вже існує.");
+            }
             if (ModelState.IsValid)
             {
                 _context.Add(author);
@@ -98,6 +104,12 @@ namespace ArchiveInfrastructure.Controllers
             if (id != author.Id)
             {
                 return NotFound();
+            }
+            var existingForm = await _context.Authors
+                .FirstOrDefaultAsync(p => p.LastName == author.LastName && p.FirstName == author.FirstName);
+            if (existingForm != null)
+            {
+                ModelState.AddModelError(string.Empty, "Автор з такою назвою вже існує.");
             }
 
             if (ModelState.IsValid)

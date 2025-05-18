@@ -60,6 +60,12 @@ namespace ArchiveInfrastructure.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("Language1,Id")] Language language)
         {
+            var existingForm = await _context.Languages
+                .FirstOrDefaultAsync(p => p.Language1 == language.Language1);
+            if (existingForm != null)
+            {
+                ModelState.AddModelError(string.Empty, "Мова з такою назвою вже існує.");
+            }
             if (ModelState.IsValid)
             {
                 _context.Add(language);
@@ -97,6 +103,14 @@ namespace ArchiveInfrastructure.Controllers
             if (id != language.Id)
             {
                 return NotFound();
+            }
+
+
+            var existingForm = await _context.Languages
+                .FirstOrDefaultAsync(p => p.Language1 == language.Language1);
+            if (existingForm != null)
+            {
+                ModelState.AddModelError(string.Empty, "Мова з такою назвою вже існує.");
             }
 
             if (ModelState.IsValid)

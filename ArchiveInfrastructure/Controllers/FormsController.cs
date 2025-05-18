@@ -61,6 +61,12 @@ namespace ArchiveInfrastructure.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("FormName,Id")] Form form)
         {
+            var existingForm = await _context.Forms
+                .FirstOrDefaultAsync(p => p.FormName == form.FormName);
+            if (existingForm != null)
+            {
+                ModelState.AddModelError(string.Empty, "Жанр з такою назвою вже існує.");
+            }
             if (ModelState.IsValid)
             {
                 _context.Add(form);
@@ -98,6 +104,13 @@ namespace ArchiveInfrastructure.Controllers
             if (id != form.Id)
             {
                 return NotFound();
+            }
+
+            var existingForm = await _context.Forms
+                .FirstOrDefaultAsync(p => p.FormName == form.FormName);
+            if (existingForm != null)
+            {
+                ModelState.AddModelError(string.Empty, "Жанр з такою назвою вже існує.");
             }
 
             if (ModelState.IsValid)

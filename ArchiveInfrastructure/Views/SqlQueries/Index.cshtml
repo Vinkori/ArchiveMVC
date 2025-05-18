@@ -1,0 +1,154 @@
+﻿@model ArchiveInfrastructure.ViewModels.SqlQueriesViewModel
+
+<div class="container mt-4">
+    <h1>Параметризовані SQL-запити</h1>
+
+    <!-- Query 1 -->
+    <div class="mb-4">
+        <h4>Запит 1: Вірші автора з прізвищем LastName, у назві яких є Keyword, з >= MinLikes лайків</h4>
+        <form method="post" class="row g-3">
+            <input type="hidden" name="queryType" value="Query1" />
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="Query1_LastName" placeholder="Прізвище" value="@Model.Query1_LastName" />
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="Query1_Keyword" placeholder="Ключове слово" value="@Model.Query1_Keyword" />
+            </div>
+            <div class="col-md-3">
+                <input type="number" class="form-control" name="Query1_MinLikes" placeholder="Мін. лайки" value="@Model.Query1_MinLikes" />
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Виконати</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Query 2 -->
+    <div class="mb-4">
+        <h4>Запит 2: Автори, які писали мовою LanguageName</h4>
+        <form method="post" class="row g-3">
+            <input type="hidden" name="queryType" value="Query2" />
+            <div class="col-md-6">
+                <input type="text" class="form-control" name="Query2_LanguageName" placeholder="Назва мови" value="@Model.Query2_LanguageName" />
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Виконати</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Query 3 -->
+    <div class="mb-4">
+        <h4>Запит 3: Жанри віршів, опублікованих після AfterDate</h4>
+        <form method="post" class="row g-3">
+            <input type="hidden" name="queryType" value="Query3" />
+            <div class="col-md-6">
+                <input type="date" class="form-control" name="Query3_AfterDate" value="@Model.Query3_AfterDate?.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Виконати</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Query 4 -->
+    <div class="mb-4">
+        <h4>Запит 4: Користувачі, які лайкали жанр FormName</h4>
+        <form method="post" class="row g-3">
+            <input type="hidden" name="queryType" value="Query4" />
+            <div class="col-md-6">
+                <input type="text" class="form-control" name="Query4_FormName" placeholder="Назва жанру" value="@Model.Query4_FormName" />
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Виконати</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Query 5 -->
+    <div class="mb-4">
+        <h4>Запит 5: Вірші адміна AdminName мовою LanguageName</h4>
+        <form method="post" class="row g-3">
+            <input type="hidden" name="queryType" value="Query5" />
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="Query5_AdminName" placeholder="Логін адміна" value="@Model.Query5_AdminName" />
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="Query5_LanguageName" placeholder="Мова" value="@Model.Query5_LanguageName" />
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Виконати</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Query 6 -->
+    <div class="mb-4">
+        <h4>Запит 6: Користувачі з такими ж лайками, як UserId</h4>
+        <form method="post" class="row g-3">
+            <input type="hidden" name="queryType" value="Query6" />
+            <div class="col-md-6">
+                <input type="text" class="form-control" name="Query6_UserId" placeholder="ID користувача" value="@Model.Query6_UserId" />
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Виконати</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Query 7 -->
+    <div class="mb-4">
+        <h4>Запит 7: Пари користувачів з однаковими лайками</h4>
+        <form method="post" class="row g-3">
+            <input type="hidden" name="queryType" value="Query7" />
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Виконати</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Query 8 -->
+    <div class="mb-4">
+        <h4>Запит 8: Користувачі, які лайкнули всі вірші автора AuthorId</h4>
+        <form method="post" class="row g-3">
+            <input type="hidden" name="queryType" value="Query8" />
+            <div class="col-md-6">
+                <input type="number" class="form-control" name="Query8_AuthorId" placeholder="ID автора" value="@Model.Query8_AuthorId" />
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Виконати</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Результати -->
+    @if (Model.QueryResults != null && Model.QueryResults.Any())
+    {
+        <h3 class="mt-5">Результати запиту @Model.ExecutedQuery</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    @foreach (var column in Model.ColumnNames)
+                    {
+                        <th>@column</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.QueryResults)
+                {
+                    <tr>
+                        @foreach (var column in Model.ColumnNames)
+                        {
+                            <td>@row[column].ToString()</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger mt-5">@Model.ErrorMessage</div>
+    }
+</div>

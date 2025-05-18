@@ -1,4 +1,6 @@
-﻿@{
+﻿@model ArchiveInfrastructure.ViewModels.CreateRoleViewModel
+
+@{
     ViewData["Title"] = "Створити роль";
 }
 
@@ -8,9 +10,11 @@
     <div class="row">
         <div class="col-md-6">
             <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="form-group mb-3">
-                    <label for="roleName" class="control-label">Назва ролі</label>
-                    <input type="text" name="roleName" id="roleName" class="form-control" />
+                    <label asp-for="RoleName" class="control-label"></label>
+                    <input asp-for="RoleName" class="form-control" />
+                    <span asp-validation-for="RoleName" class="text-danger"></span>
                 </div>
                 <div class="form-group mt-3">
                     <input type="submit" value="Створити" class="btn btn-primary" />
@@ -34,3 +38,9 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

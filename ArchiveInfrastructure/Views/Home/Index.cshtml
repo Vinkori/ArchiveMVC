@@ -3,19 +3,50 @@
 }
 
 <div class="page-content">
-@if (User.Identity.IsAuthenticated)
-{
+    <h1 class="mb-4">Архів поезій</h1>
 
-    <p>@User.Identity.Name</p>
+    <div class="mb-4">
+        @if (User.Identity.IsAuthenticated)
+        {
+            <p>Вітаємо, @User.Identity.Name!</p>
+            <form method="post" asp-controller="Account" asp-action="Logout" class="d-inline">
+                <input type="submit" value="Вихід" class="btn btn-secondary" />
+            </form>
+        }
+        else
+        {
+            <a asp-controller="Account" asp-action="Login" class="btn btn-primary me-2">Вхід</a>
+            <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Реєстрація</a>
+        }
+    </div>
 
-    <form method="post" asp-controller="Account" asp-action="Logout">
-        <input type="submit" value="Вихід" />
-    </form>
-}
-else
-{
-        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Вхід</a>
-        <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Реєстація</a>
-}
+    <h3 class="mb-3">Меню</h3>
+    <div class="list-group">
+        <a asp-controller="Poetries" asp-action="Index" class="list-group-item list-group-item-action">
+            Поезії
+        </a>
 
+        @if (User.Identity.IsAuthenticated)
+        {
+            <a asp-controller="Poetries" asp-action="Liked" class="list-group-item list-group-item-action">
+                Вподобані поезії
+            </a>
+        }
+
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-controller="Forms" asp-action="Index" class="list-group-item list-group-item-action">
+                Жанри поезії
+            </a>
+            <a asp-controller="Languages" asp-action="Index" class="list-group-item list-group-item-action">
+                Мови
+            </a>
+            <a asp-controller="Authors" asp-action="Index" class="list-group-item list-group-item-action">
+                Автори
+            </a>
+            <a asp-controller="Roles" asp-action="Index" class="list-group-item list-group-item-action">
+                Ролі
+            </a>
+        }
+    </div>
 </div>

@@ -131,31 +131,22 @@ namespace ArchiveInfrastructure.Controllers
         // POST: Roles/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create(string roleName)
+        public async Task<IActionResult> Create(CreateRoleViewModel model)
         {
-            if (string.IsNullOrWhiteSpace(roleName))
+            if (ModelState.IsValid)
             {
-                TempData["ErrorMessage"] = "Назва ролі не може бути порожньою.";
-                return View();
+                var result = await _roleManager.CreateAsync(new IdentityRole(model.RoleName));
+                if (result.Succeeded)
+                {
+                    TempData["SuccessMessage"] = "Роль успішно створено.";
+                    return RedirectToAction(nameof(Index));
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
             }
-
-            var roleExists = await _roleManager.RoleExistsAsync(roleName);
-            if (roleExists)
-            {
-                TempData["ErrorMessage"] = $"Роль '{roleName}' уже існує.";
-                return View();
-            }
-
-            var result = await _roleManager.CreateAsync(new IdentityRole(roleName));
-            if (result.Succeeded)
-            {
-                TempData["SuccessMessage"] = $"Роль '{roleName}' успішно створено.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            TempData["ErrorMessage"] = "Помилка при створенні ролі: " + string.Join(", ", result.Errors.Select(e => e.Description));
-            return View();
+            return View(model);
         }
 
         // POST: Roles/Delete/{id}

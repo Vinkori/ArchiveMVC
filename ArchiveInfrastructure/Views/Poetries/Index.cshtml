@@ -6,13 +6,16 @@
 
 <div class="page-content">
     <h1 class="mb-4">Поезії</h1>
-
+    <div class="mb-3">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Повернутися до меню</a>
+    </div>
     @if (User.IsInRole("Admin"))
     {
         <p>
             <a asp-action="Create" class="btn btn-primary">Додати нову поезію</a>
         </p>
     }
+
 
     <!-- Фільтри -->
     <form asp-action="Index" method="get" class="mb-4">

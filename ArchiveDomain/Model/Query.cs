@@ -13,8 +13,9 @@ namespace ArchiveDomain.Model
         public DateTime? AfterDate { get; set; } // Query3: Дата після якої
         public string FormName { get; set; } // Query4: Назва жанру
         public string AdminName { get; set; } // Query5: Логін адміністратора
-        public string UserId { get; set; } // Query6: ID користувача
+        public string UserName { get; set; } // Query6:  користувача
         public int? AuthorId { get; set; } // Query8: ID автора
+
 
         // Поля для результатів і помилок
         public string QueryName { get; set; } // Назва запиту (Q1, Q2, ..., Q8)

@@ -196,7 +196,7 @@ namespace ArchiveInfrastructure.Controllers
                             int count = 0;
                             while (reader.Read())
                             {
-                                queryModel.Genres.Add(reader.GetString(0));
+                                queryModel.Genres.Add(reader.GetString(0)); // Зчитуємо лише FormName як string
                                 count++;
                             }
                             if (count == 0)
@@ -345,23 +345,22 @@ namespace ArchiveInfrastructure.Controllers
 
             return View("Results", queryModel);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Query6(Query queryModel)
         {
-            if (string.IsNullOrEmpty(queryModel.UserId))
+            if (string.IsNullOrEmpty(queryModel.UserName))
             {
                 ViewBag.ErrorFlag = 1;
-                ViewBag.QuantityError = "ID користувача для запиту 6 є обов'язковим.";
+                ViewBag.QuantityError = "Логін користувача для запиту 6 є обов'язковим.";
                 return View("Index", queryModel);
             }
 
             // Validate user exists
-            if (!_context.Users.Any(u => u.Id == queryModel.UserId))
+            if (!_context.Users.Any(u => u.UserName == queryModel.UserName))
             {
                 ViewBag.ErrorFlag = 1;
-                ViewBag.QuantityError = "Користувач із вказаним ID не існує.";
+                ViewBag.QuantityError = "Користувач із вказаним логіном не існує.";
                 return View("Index", queryModel);
             }
 
@@ -378,7 +377,7 @@ namespace ArchiveInfrastructure.Controllers
                     connection.Open();
                     using (var command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@UserId", queryModel.UserId);
+                        command.Parameters.AddWithValue("@UserName", queryModel.UserName);
 
                         using (var reader = command.ExecuteReader())
                         {
@@ -410,13 +409,19 @@ namespace ArchiveInfrastructure.Controllers
 
             return View("Results", queryModel);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Query7(Query queryModel)
         {
+            if (string.IsNullOrEmpty(queryModel.LastName))
+            {
+                ViewBag.ErrorFlag = 1;
+                ViewBag.QuantityError = "Прізвище автора для запиту 7 є обов'язковим.";
+                return View("Index", queryModel);
+            }
+
             string query = System.IO.File.ReadAllText(Q7_PATH);
-            queryModel.UserPairs = new List<Query.UserPair>();
+            queryModel.Authors = new List<Query.AuthorInfo>(); // Використовуємо список авторів
             queryModel.QueryName = "Q7";
             queryModel.ErrorFlag = 0;
             queryModel.ErrorName = null;
@@ -428,22 +433,24 @@ namespace ArchiveInfrastructure.Controllers
                     connection.Open();
                     using (var command = new SqlCommand(query, connection))
                     {
+                        command.Parameters.AddWithValue("@LastName", queryModel.LastName);
+
                         using (var reader = command.ExecuteReader())
                         {
                             int count = 0;
                             while (reader.Read())
                             {
-                                queryModel.UserPairs.Add(new Query.UserPair
+                                queryModel.Authors.Add(new Query.AuthorInfo
                                 {
-                                    UserA = reader.GetString(0),
-                                    UserB = reader.GetString(1)
+                                    Id = reader.GetInt32(0),
+                                    FullName = $"{reader.GetString(1)} {reader.GetString(2)}"
                                 });
                                 count++;
                             }
                             if (count == 0)
                             {
                                 queryModel.ErrorFlag = 1;
-                                queryModel.ErrorName = ERR_PAIRS;
+                                queryModel.ErrorName = ERR_AUTHORS;
                             }
                         }
                     }
@@ -458,23 +465,22 @@ namespace ArchiveInfrastructure.Controllers
 
             return View("Results", queryModel);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Query8(Query queryModel)
         {
-            if (!queryModel.AuthorId.HasValue)
+            if (string.IsNullOrEmpty(queryModel.LastName))
             {
                 ViewBag.ErrorFlag = 1;
-                ViewBag.QuantityError = "ID автора для запиту 8 є обов'язковим.";
+                ViewBag.QuantityError = "Прізвище автора для запиту 8 є обов'язковим.";
                 return View("Index", queryModel);
             }
 
             // Validate author exists
-            if (!_context.Authors.Any(a => a.Id == queryModel.AuthorId))
+            if (!_context.Authors.Any(a => a.LastName == queryModel.LastName))
             {
                 ViewBag.ErrorFlag = 1;
-                ViewBag.QuantityError = "Автор із вказаним ID не існує.";
+                ViewBag.QuantityError = "Автор із вказаним прізвищем не існує.";
                 return View("Index", queryModel);
             }
 
@@ -491,7 +497,7 @@ namespace ArchiveInfrastructure.Controllers
                     connection.Open();
                     using (var command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@AuthorId", queryModel.AuthorId.Value);
+                        command.Parameters.AddWithValue("@LastName", queryModel.LastName);
 
                         using (var reader = command.ExecuteReader())
                         {
@@ -522,11 +528,6 @@ namespace ArchiveInfrastructure.Controllers
             }
 
             return View("Results", queryModel);
-        }
-
-        public IActionResult Results(Query queryResult)
-        {
-            return View(queryResult);
         }
     }
 }

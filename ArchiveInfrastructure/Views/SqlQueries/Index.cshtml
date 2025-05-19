@@ -4,258 +4,179 @@
     ViewData["Title"] = "Запити";
 }
 
-<section class="sessions-section py-4 gray-bg">
-    <div class="container-fluid">
-        <h1 class="section-title text-center mb-5">Параметризовані SQL-запити</h1>
+<div class="page-content">
+    <h1 class="mb-4">Параметризовані SQL-запити</h1>
 
-        @if (ViewBag.ErrorFlag != null && ViewBag.ErrorFlag == 1)
-        {
-            <div class="alert alert-danger shadow-sm">
-                @ViewBag.QuantityError
-            </div>
-        }
+    @if (ViewBag.ErrorFlag != null && ViewBag.ErrorFlag == 1)
+    {
+        <div class="alert alert-danger">
+            @ViewBag.QuantityError
+        </div>
+    }
 
-        <div class="row">
-            <div class="col-md-12">
-                <!-- Query 1 -->
-                <div class="card mb-4 shadow-sm rounded">
-                    <div class="card-header bg-maroon text-white">Запит 1: Вірші автора з прізвищем, у назві яких є ключове слово, з >= заданою кількістю лайків</div>
-                    <div class="card-body">
-                        <form asp-action="Query1" method="post">
-                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                            <div class="form-group mb-3">
-                                <label asp-for="LastName" class="form-label">Прізвище автора</label>
-                                <input asp-for="LastName" class="form-control" />
-                                <span asp-validation-for="LastName" class="text-danger"></span>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label asp-for="Keyword" class="form-label">Ключове слово</label>
-                                <input asp-for="Keyword" class="form-control" />
-                                <span asp-validation-for="Keyword" class="text-danger"></span>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label asp-for="MinLikes" class="form-label">Мінімальна кількість лайків</label>
-                                <input asp-for="MinLikes" class="form-control" type="number" />
-                                <span asp-validation-for="MinLikes" class="text-danger"></span>
-                            </div>
-                            <div class="form-group text-end">
-                                <button type="submit" class="btn btn-maroon"><i class="fas fa-play me-1"></i>Виконати</button>
-                            </div>
-                        </form>
-                    </div>
+    <!-- Query 1 -->
+    <div class="mb-4">
+        <h4 class="mb-3">Запит 1: Вірші автора з заданим прізвищем, у назві цих віршів є ключове слово, та кількість лайків на цих віршах не менша заданої</h4>
+        <form asp-action="Query1" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="LastName" class="form-label">Прізвище автора</label>
+                    <input asp-for="LastName" class="form-control" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
                 </div>
-
-                <!-- Query 2 -->
-                <div class="card mb-4 shadow-sm rounded">
-                    <div class="card-header bg-maroon text-white">Запит 2: Автори, які писали мовою</div>
-                    <div class="card-body">
-                        <form asp-action="Query2" method="post">
-                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                            <div class="form-group mb-3">
-                                <label asp-for="LanguageName" class="form-label">Назва мови</label>
-                                <input asp-for="LanguageName" class="form-control" />
-                                <span asp-validation-for="LanguageName" class="text-danger"></span>
-                            </div>
-                            <div class="form-group text-end">
-                                <button type="submit" class="btn btn-maroon"><i class="fas fa-play me-1"></i>Виконати</button>
-                            </div>
-                        </form>
-                    </div>
+                <div class="col-md-4">
+                    <label asp-for="Keyword" class="form-label">Ключове слово</label>
+                    <input asp-for="Keyword" class="form-control" />
+                    <span asp-validation-for="Keyword" class="text-danger"></span>
                 </div>
-
-                <!-- Query 3 -->
-                <div class="card mb-4 shadow-sm rounded">
-                    <div class="card-header bg-maroon text-white">Запит 3: Жанри віршів, опублікованих після заданої дати</div>
-                    <div class="card-body">
-                        <form asp-action="Query3" method="post">
-                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                            <div class="form-group mb-3">
-                                <label asp-for="AfterDate" class="form-label">Дата (після)</label>
-                                <input asp-for="AfterDate" class="form-control" type="date" />
-                                <span asp-validation-for="AfterDate" class="text-danger"></span>
-                            </div>
-                            <div class="form-group text-end">
-                                <button type="submit" class="btn btn-maroon"><i class="fas fa-play me-1"></i>Виконати</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Query 4 -->
-                <div class="card mb-4 shadow-sm rounded">
-                    <div class="card-header bg-maroon text-white">Запит 4: Користувачі, які лайкали жанр</div>
-                    <div class="card-body">
-                        <form asp-action="Query4" method="post">
-                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                            <div class="form-group mb-3">
-                                <label asp-for="FormName" class="form-label">Назва жанру</label>
-                                <input asp-for="FormName" class="form-control" />
-                                <span asp-validation-for="FormName" class="text-danger"></span>
-                            </div>
-                            <div class="form-group text-end">
-                                <button type="submit" class="btn btn-maroon"><i class="fas fa-play me-1"></i>Виконати</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Query 5 -->
-                <div class="card mb-4 shadow-sm rounded">
-                    <div class="card-header bg-maroon text-white">Запит 5: Вірші адміна мовою</div>
-                    <div class="card-body">
-                        <form asp-action="Query5" method="post">
-                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                            <div class="form-group mb-3">
-                                <label asp-for="AdminName" class="form-label">Логін адміна</label>
-                                <input asp-for="AdminName" class="form-control" />
-                                <span asp-validation-for="AdminName" class="text-danger"></span>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label asp-for="LanguageName" class="form-label">Мова</label>
-                                <input asp-for="LanguageName" class="form-control" />
-                                <span asp-validation-for="LanguageName" class="text-danger"></span>
-                            </div>
-                            <div class="form-group text-end">
-                                <button type="submit" class="btn btn-maroon"><i class="fas fa-play me-1"></i>Виконати</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Query 6 -->
-                <div class="card mb-4 shadow-sm rounded highlight-card">
-                    <div class="card-header bg-blue text-white">Запит 6: Користувачі з такими ж лайками, як заданий користувач</div>
-                    <div class="card-body">
-                        <form asp-action="Query6" method="post">
-                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                            <div class="form-group mb-3">
-                                <label asp-for="UserId" class="form-label">ID користувача</label>
-                                <input asp-for="UserId" class="form-control" />
-                                <span asp-validation-for="UserId" class="text-danger"></span>
-                            </div>
-                            <div class="form-group text-end">
-                                <button type="submit" class="btn btn-blue"><i class="fas fa-play me-1"></i>Виконати</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Query 7 -->
-                <div class="card mb-4 shadow-sm rounded highlight-card">
-                    <div class="card-header bg-blue text-white">Запит 7: Пари користувачів з однаковими лайками</div>
-                    <div class="card-body">
-                        <form asp-action="Query7" method="post">
-                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                            <div class="form-group text-end">
-                                <button type="submit" class="btn btn-blue"><i class="fas fa-play me-1"></i>Виконати</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Query 8 -->
-                <div class="card mb-4 shadow-sm rounded highlight-card">
-                    <div class="card-header bg-blue text-white">Запит 8: Користувачі, які лайкнули всі вірші автора</div>
-                    <div class="card-body">
-                        <form asp-action="Query8" method="post">
-                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                            <div class="form-group mb-3">
-                                <label asp-for="AuthorId" class="form-label">ID автора</label>
-                                <input asp-for="AuthorId" class="form-control" type="number" />
-                                <span asp-validation-for="AuthorId" class="text-danger"></span>
-                            </div>
-                            <div class="form-group text-end">
-                                <button type="submit" class="btn btn-blue"><i class="fas fa-play me-1"></i>Виконати</button>
-                            </div>
-                        </form>
-                    </div>
+                <div class="col-md-4">
+                    <label asp-for="MinLikes" class="form-label">Мінімальна кількість лайків</label>
+                    <input asp-for="MinLikes" class="form-control" type="number" />
+                    <span asp-validation-for="MinLikes" class="text-danger"></span>
                 </div>
             </div>
-        </div>
-
-        <div class="text-end">
-            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i>Назад до панелі</a>
-        </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Виконати</button>
+            </div>
+        </form>
     </div>
-</section>
 
-<style>
-    .gray-bg {
-        background-color: #f8f9fa;
-    }
+    <!-- Query 2 -->
+    <div class="mb-4">
+        <h4 class="mb-3">Запит 2: Автори, які писали мовою</h4>
+        <form asp-action="Query2" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="LanguageName" class="form-label">Назва мови</label>
+                    <input asp-for="LanguageName" class="form-control" />
+                    <span asp-validation-for="LanguageName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Виконати</button>
+            </div>
+        </form>
+    </div>
 
-    .section-title {
-        color: #800020;
-        font-weight: bold;
-    }
+    <!-- Query 3 -->
+    <div class="mb-4">
+        <h4 class="mb-3">Запит 3: Жанри віршів, опублікованих після заданої дати включно</h4>
+        <form asp-action="Query3" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="AfterDate" class="form-label">Дата (після)</label>
+                    <input asp-for="AfterDate" class="form-control" type="date" />
+                    <span asp-validation-for="AfterDate" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Виконати</button>
+            </div>
+        </form>
+    </div>
 
-    .card {
-        border-radius: 10px;
-        border: none;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
+    <!-- Query 4 -->
+    <div class="mb-4">
+        <h4 class="mb-3">Запит 4: Користувачі, які лайкали хоча б один вірш жанру</h4>
+        <form asp-action="Query4" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="FormName" class="form-label">Назва жанру</label>
+                    <input asp-for="FormName" class="form-control" />
+                    <span asp-validation-for="FormName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Виконати</button>
+            </div>
+        </form>
+    </div>
 
-    .card-header {
-        font-weight: bold;
-    }
+    <!-- Query 5 -->
+    <div class="mb-4">
+        <h4 class="mb-3">Запит 5: Вірші адміна мовою</h4>
+        <form asp-action="Query5" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="AdminName" class="form-label">Логін адміна</label>
+                    <input asp-for="AdminName" class="form-control" />
+                    <span asp-validation-for="AdminName" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="LanguageName" class="form-label">Мова</label>
+                    <input asp-for="LanguageName" class="form-control" />
+                    <span asp-validation-for="LanguageName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Виконати</button>
+            </div>
+        </form>
+    </div>
 
-    .bg-maroon {
-        background-color: #800020;
-    }
+    <!-- Query 6 -->
+    <div class="mb-4">
+        <h4 class="mb-3">Запит 6: Користувачі з такими ж лайками, як заданий користувач</h4>
+        <form asp-action="Query6" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="UserName" class="form-label">Логін користувача</label>
+                    <input asp-for="UserName" class="form-control" />
+                    <span asp-validation-for="UserName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Виконати</button>
+            </div>
+        </form>
+    </div>
 
-    .bg-blue {
-        background-color: #005555;
-    }
+    <!-- Query 7 -->
+    <div class="mb-4">
+        <h4 class="mb-3">Запит 7: Автори, які писали у тих самих жанрах, що й заданий автор</h4>
+        <form asp-action="Query7" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="LastName" class="form-label">Прізвище автора</label>
+                    <input asp-for="LastName" class="form-control" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Виконати</button>
+            </div>
+        </form>
+    </div>
 
-    .highlight-card {
-        border-left: 5px solid #005555;
-        background-color: #e6f0fa;
-    }
+    <!-- Query 8 -->
+    <div class="mb-4">
+        <h4 class="mb-3">Запит 8: Користувачі, які лайкнули всі вірші автора</h4>
+        <form asp-action="Query8" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="LastName" class="form-label">Прізвище автора</label>
+                    <input asp-for="LastName" class="form-control" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Виконати</button>
+            </div>
+        </form>
+    </div>
 
-    .btn-maroon {
-        background-color: #800020;
-        border-color: #800020;
-        color: white;
-    }
-
-        .btn-maroon:hover {
-            background-color: #660018;
-            border-color: #660018;
-        }
-
-    .btn-blue {
-        background-color: #005555;
-        border-color: #005555;
-        color: white;
-    }
-
-        .btn-blue:hover {
-            background-color: #003737;
-            border-color: #003737;
-        }
-
-    .btn-secondary {
-        background-color: #6c757d;
-        border-color: #6c757d;
-    }
-
-        .btn-secondary:hover {
-            background-color: #5a6268;
-            border-color: #545b62;
-        }
-
-    .form-label {
-        font-weight: 500;
-    }
-
-    .form-control {
-        border-radius: 5px;
-    }
-
-    .text-danger {
-        font-size: 0.875rem;
-    }
-</style>
+    <div class="mt-3">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Повернутися до меню</a>
+    </div>
+</div>
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
